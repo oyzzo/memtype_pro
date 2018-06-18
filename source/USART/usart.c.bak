@@ -1,0 +1,74 @@
+/*!  \file     usart.c
+ *   \brief    USART Low Level Driver for SAMD
+ *   Created:  15/06/2018
+ *   Author:   MBorregoTrujillo
+ */
+#include "usart.h"
+
+/*! \fn     usart_deinit
+ *  \brief  De initialize and Reset a SERCOM in USART mode
+ */
+void usart_deinit(Sercom* pt){
+    /* Disable SERCOM */
+    pt->USART.CTRLA.reg = 0;
+    while (pt->USART.SYNCBUSY.reg);
+    /* Reset SERCOM */
+    pt->USART.CTRLA.reg = USART_CTRLA_SWRST;
+    while (pt->USART.SYNCBUSY.reg);
+}
+
+/*! \fn     usart_init
+ *  \brief  Initialize a SERCOM in USART mode
+ *  \param  pt       Pointer to a sercom module
+ *  \param  baud_div Value for baud generation
+ *  \param  rx_pad          RX pad (see enum)
+ *  \param  usart_tx_xck_rts_cts_pad TX/XCK/RTS/CTS pad (see enum)
+ */
+void usart_init(Sercom* pt,
+                       uint32_t baud_div,
+                       usart_rx_pad_te rx_pad,
+                       usart_tx_xck_rts_cts_pad_te usart_tx_xck_rts_cts_pad){
+
+    USART_CTRLA_Type usart_ctrla_reg;
+    usart_ctrla_reg.reg = USART_CTRLA_ENABLE;
+    USART_CTRLB_Type usart_ctrlb_reg;
+    /* Register configuration */
+    usart_ctrla_reg.bit.MODE = 1;                                               // step1. internal clock (1)
+    usart_ctrla_reg.bit.CMODE = 0;                                              // step2. either asynchronous (0)
+    usart_ctrla_reg.bit.RXPO = rx_pad;                                          // step3. pin for receive data
+    usart_ctrla_reg.bit.TXPO = usart_tx_xck_rts_cts_pad;                        // step4. pads for the transmitter
+
+    usart_ctrlb_reg.bit.CHSIZE = 0;                                             // step5. 8 bits transmission
+
+    usart_ctrla_reg.bit.DORD = 0;                                               // step6. MSB first
+    usart_ctrla_reg.bit.FORM = 0;                                               // step7. No parity
+    usart_ctrla_reg.bit.SAMPR = 3;                                              // 8x over-sampling using fractional baud rate generation.
+
+    usart_ctrlb_reg.bit.SBMODE = 0;                                             // step8. 1 Stop bit
+    pt->USART.BAUD.reg = baud_div;                                // step9. Write baud divider
+
+    usart_ctrlb_reg.bit.RXEN = 1;                                               // step10. Enable RX
+    usart_ctrlb_reg.bit.TXEN = 1;                                               // step10. Enable TX
+
+    /* write CTRLB */
+    while (pt->USART.SYNCBUSY.reg);                                      // Wait for sync
+    pt->USART.CTRLB = usart_ctrlb_reg;
+
+    /* perform USART enable after writing to BAUD and CTRLB */
+    while (pt->USART.SYNCBUSY.reg);                                      // Wait for sync
+    pt->USART.CTRLA = usart_ctrla_reg;
+    while (pt->USART.SYNCBUSY.reg);                                      // Wait for sync
+}
+
+/*! \fn     usart_write_byte
+ *  \brief  Send a single byte through a given sercom
+ *  \param  pt      Pointer to a sercom module
+ *  \param  data    Byte to send
+ *  \return received data
+ */
+uint8_t send_single_byte(Sercom* pt, uint8_t data){
+    pt->USART.INTFLAG.reg = USART_INTFLAG_TXC;                    // Clear transmit complete flag
+    pt->USART.DATA.reg = data;                                         // Write data byte to transmit
+    while ((pt->USART.INTFLAG.reg & USART_INTFLAG_TXC) == 0);     // Wait for received data
+    return pt->USART.DATA.reg;
+}
