@@ -64,6 +64,11 @@ debug: CFLAGS += -ggdb -DDEBUG
 debug: ASFLAGS += -ggdb -DDEBUG
 debug: $(OUTPUT_FILE)
 
+# Generate the documentation
+docs:
+	rm -rf docs
+	doxygen Doxyfile
+
 # Link target
 $(OUTPUT_FILE): $(OBJS)
 	$(CC) -o $(OUTPUT_FILE) $(LDFLAGS) $(OBJS)
@@ -85,6 +90,7 @@ startup/%.o: startup/%.c
 clean:
 	rm -f $(OBJS)
 	rm -f $(OUTPUT_FILE_NAME).elf $(OUTPUT_FILE_NAME).bin $(OUTPUT_FILE_NAME).hex $(OUTPUT_FILE_NAME).lss
+	rm -rf docs
 
 # Add targets that aren't a file
 .PHONY: all release debug clean

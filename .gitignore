@@ -38,6 +38,9 @@
 *.elf
 *.hex
 
+# Documentation
+docs
+
 # Debug files
 *.dSYM/
 *.su
