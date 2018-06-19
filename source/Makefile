@@ -45,6 +45,7 @@ SRCS += PORT/port_manager.c
 SRCS += I2C/i2c.c
 SRCS += USART/usart.c
 SRCS += OLED/oled.c
+SRCS += GUI/gui.c
 
 # Convert .c to .o
 OBJS = $(SRCS:.c=.o)
