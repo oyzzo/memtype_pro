@@ -50,7 +50,19 @@ SRCS += OLED/oled.c
 OBJS = $(SRCS:.c=.o)
 
 # All target
-all: $(OUTPUT_FILE)
+all: release
+
+# Release target
+# Using target specific variable values
+release: CFLAGS += -O1
+release: ASLAGS += -O1
+release: $(OUTPUT_FILE)
+
+# Debug target
+# Using target specific variable values
+debug: CFLAGS += -ggdb -DDEBUG
+debug: ASFLAGS += -ggdb -DDEBUG
+debug: $(OUTPUT_FILE)
 
 # Link target
 $(OUTPUT_FILE): $(OBJS)
@@ -74,3 +86,5 @@ clean:
 	rm -f $(OBJS)
 	rm -f $(OUTPUT_FILE_NAME).elf $(OUTPUT_FILE_NAME).bin $(OUTPUT_FILE_NAME).hex $(OUTPUT_FILE_NAME).lss
 
+# Add targets that aren't a file
+.PHONY: all release debug clean
