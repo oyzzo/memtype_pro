@@ -14,9 +14,11 @@ static uint8_t oled_display_data[193];
  *  \param  cmd     command to send to OLED display    
  */
 static void oled_sendcommand(uint8_t cmd){
-    //control byte //initialization byte
-    uint8_t data[2] = { 0x00, cmd };
-    i2c_master_write(OLED_SERCOM, OLED_I2C_ADDR, data, sizeof(data));
+    i2c_master_start(OLED_SERCOM, OLED_I2C_ADDR);
+    //control byte  //initialization byte
+    i2c_master_write_byte(OLED_SERCOM, 0x00);
+    i2c_master_write_byte(OLED_SERCOM, cmd);
+    i2c_master_stop(OLED_SERCOM);
 }
 /*! \fn     oled_init
  *  \brief  Initialization of the display
@@ -54,10 +56,8 @@ void oled_init(void){
  *  \param  len     Data length (1 byte == 8 pixels in vertical)
  */
 void oled_write_display(const uint8_t *data, uint16_t len){
-    uint16_t i;
-    oled_display_data[0] = 0x40; //control byte (send data)
-    for(i=0;i<len;i++){
-        oled_display_data[i+1] = data[i];
-    }
-    i2c_master_write(OLED_SERCOM, OLED_I2C_ADDR, oled_display_data, len+1);
+    i2c_master_start(OLED_SERCOM, OLED_I2C_ADDR);
+    i2c_master_write_byte(OLED_SERCOM, 0x40);
+    i2c_master_write(OLED_SERCOM, data, len);
+    i2c_master_stop(OLED_SERCOM);
 }

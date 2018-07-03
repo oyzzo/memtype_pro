@@ -11,6 +11,9 @@
 /* Prototypes */
 void i2c_deinit(Sercom* sercom_pt);
 void i2c_master_init(Sercom* sercom_pt, uint32_t baudrate);
-void i2c_master_write(Sercom* sercom_pt, uint8_t addr, uint8_t *data, uint8_t len);
+void i2c_master_start(Sercom* sercom_pt, uint8_t addr);
+void i2c_master_stop(Sercom* sercom_pt);
+void i2c_master_write(Sercom* sercom_pt, uint8_t *data, uint8_t len);
+void i2c_master_write_byte(Sercom* sercom_pt, uint8_t data);
 
 #endif /* I2C_H_ */
